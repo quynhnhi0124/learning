@@ -1,61 +1,80 @@
-import React from "react";
-import ReactDOM from "react-dom";
-import { useState } from "react";
+import * as React from "react";
+import ReactDOM from "react-dom"
+import Content from "./Content"
+
+const LIST_JOB = [
+    {
+        id: '1',
+        name: 'Di choi'
+    },
+    {
+        id: '2',
+        name: 'Di ngu'
+    }
+];
+
 
 function App()
 {
-    const [jobs, setJobs] = useState(() => {
-        const listJob = JSON.parse(localStorage.getItem('jobs'));
-        return listJob || [];
-    });
-    const [job, setJob] = useState('');
-    const [showUpdate, setShowUpdate] = useState(() => {
-        return new Array(jobs.length).fill().map((value) => (value = false));
-    });
+    const [jobs, setJobs] = React.useState(LIST_JOB);
+    const [addJob, setAddJob] = React.useState('');
+    const [isShowUpdate, setIsShowUpdate] = React.useState();
 
-    const handleAdd = () => {
-        setJobs(prev => {
-            const newJob = [...prev, job];
-            localStorage.setItem('jobs', JSON.stringify(newJob))
-            return newJob;
-        });
-        setJob('');
+    const handleAddJob = () => {
+        setJobs([...jobs, {id: String(jobs.length + 1), name: addJob}])
+    }
+    
+    const handleShowUpdate = (jobId) => {
+        setIsShowUpdate(jobId);
     }
 
-    const handleDelete = (key) => {
-        setJobs(prev => {
-            const newList = prev.filter((prev, index) => (index !== key));
-            localStorage.setItem('jobs', JSON.stringify(newList));
-            return newList;
-        });
+    const onUpdateJob = (updateItem) => {
+        const newJobList = jobs;
+        newJobList.map(job => job.id === updateItem.id ? updateItem : job);
+        setJobs(newJobList);
+        setIsShowUpdate();
     }
 
-    const handleUpdate = (key) => {
-        setShowUpdate((prev) => {
-            prev[key] = !prev[key];
-            return prev;
-        });
+    const cancelUpdate = () => {
+        setIsShowUpdate();
     }
 
+    const handleDeleteJob = (jobId) => {
+        const newJobList = jobs.filter(job => {
+            return job.id !== jobId
+        });
+        setJobs(newJobList);
+    }
+    
     return (
-        <div className="wrapper">
-            <input 
-                value={job}
-                onChange={e => setJob(e.target.value)}
-            />
-            <button onClick={handleAdd}>Add</button>
-
+        <div className='container'>
+            <div className="row my-3">
+                <input
+                    className='form-control col-md-8 col-sm-8'
+                    value={addJob}
+                    onChange={e => setAddJob(e.target.value)}
+                />
+                <button className='btn btn-outline-dark' onClick={handleAddJob}>Add</button>
+            </div>
+            <h3>Danh sách công việc</h3>
             <ul>
-                {jobs.map((job, key) => (
-                    <div key={key}>
-                        <li>{job}</li>
-                        <button onClick={() => handleDelete(key)}>Delete</button>
-                        <button onClick={() => handleUpdate(key)}>Update</button>
-                    </div>
-                ))}
+            {jobs.map(job => (
+                <div 
+                    key={job.id}
+                    className="row mt-3"    
+                >
+                    <li>
+                        {job.name}
+                    </li>
+                    {isShowUpdate === job.id && <Content updateItem={job} onUpdateJob={onUpdateJob} cancelUpdate={cancelUpdate}/>}
+                    <button className='btn btn-outline-dark' onClick={() => handleShowUpdate(job.id)}>Update</button>
+                    <button className='btn btn-outline-dark' onClick={() => handleDeleteJob(job.id)}>Delete</button>
+                </div>
+            ))}
             </ul>
         </div>
     );
 }
 
-ReactDOM.render(<App/>, document.getElementById('root'));
+
+ReactDOM.render(<App />, document.getElementById('root'));
