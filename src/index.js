@@ -1,27 +1,43 @@
 import * as React from "react";
 import ReactDOM from "react-dom"
-import Content from "./Content"
+import Update from "./Update"
+import Add from "./Add";
 
 const LIST_JOB = [
     {
         id: '1',
-        name: 'Di choi'
+        name: 'Di choi',
+        process: '1'
     },
     {
         id: '2',
-        name: 'Di ngu'
+        name: 'Di ngu',
+        process: '2'
     }
 ];
+
+const LIST_PROCESS = ["Dang lam", "Chua lam", "Da hoan thanh"]
 
 
 function App()
 {
     const [jobs, setJobs] = React.useState(LIST_JOB);
     const [addJob, setAddJob] = React.useState('');
+    const [addProcess, setAddProcess] = React.useState("Chua lam");
     const [isShowUpdate, setIsShowUpdate] = React.useState();
-
+    
+    const onAddJob = e => {
+        setAddJob(e.target.value)
+    }
+    
     const handleAddJob = () => {
-        setJobs([...jobs, {id: String(jobs.length + 1), name: addJob}])
+        setJobs([...jobs, {id: String(jobs.pop().id + 1), name: addJob, process: addProcess}])
+        setAddJob('')
+    }
+    console.log(addJob);
+
+    const onAddProcess = e => {
+        setAddProcess(e.target.value)
     }
     
     const handleShowUpdate = (jobId) => {
@@ -48,27 +64,36 @@ function App()
     
     return (
         <div className='container'>
-            <div className="row my-3">
-                <input
-                    className='form-control col-md-8 col-sm-8'
-                    value={addJob}
-                    onChange={e => setAddJob(e.target.value)}
-                />
-                <button className='btn btn-outline-dark' onClick={handleAddJob}>Add</button>
-            </div>
+            <Add 
+                addJob={addJob}
+                listProcess={LIST_PROCESS} 
+                handleAddJob={handleAddJob} 
+                onAddJob={onAddJob}
+                onAddProcess={onAddProcess}
+            />
             <h3>Danh sách công việc</h3>
             <ul>
             {jobs.map(job => (
-                <div 
-                    key={job.id}
-                    className="row mt-3"    
-                >
-                    <li>
-                        {job.name}
-                    </li>
-                    {isShowUpdate === job.id && <Content updateItem={job} onUpdateJob={onUpdateJob} cancelUpdate={cancelUpdate}/>}
-                    <button className='btn btn-outline-dark' onClick={() => handleShowUpdate(job.id)}>Update</button>
-                    <button className='btn btn-outline-dark' onClick={() => handleDeleteJob(job.id)}>Delete</button>
+                <div key={job.id}>
+                    <div 
+                        className="mt-3"    
+                    >
+                        <li className="d-block">
+                            <p>{job.name}</p>
+                            <p>Trạng thái: {LIST_PROCESS[job.process]}</p>
+                        </li>
+                        {
+                            isShowUpdate === job.id &&
+                            <Update 
+                                updateItem={job} 
+                                onUpdateJob={onUpdateJob} 
+                                cancelUpdate={cancelUpdate}
+                                listProcess={LIST_PROCESS} 
+                            /> 
+                        }
+                        <button className='btn btn-outline-success' onClick={() => handleShowUpdate(job.id)}>Update</button>
+                        <button className='btn btn-outline-danger' onClick={() => handleDeleteJob(job.id)}>Delete</button>
+                    </div><hr/>
                 </div>
             ))}
             </ul>
