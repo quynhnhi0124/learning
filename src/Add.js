@@ -2,7 +2,7 @@ import * as React from "react";
 
 function Add(props)
 {
-    const {addJob, listProcess, onAddJob, onAddProcess, handleAddJob} = props;
+    const {addJob, listProcess, onAddJob, onAddProcess, handleAddJob, listErrors} = props;
 
     return (
         <div className="my-3 mx-3">
@@ -13,6 +13,7 @@ function Add(props)
                     value={addJob}
                     onChange={e => onAddJob(e)}
                 />
+                <p className="text-danger">{listErrors.job ? listErrors.job: null}</p>
             </div>
             <div className="row d-block">
                 <p>Trạng thái:</p>
@@ -20,9 +21,9 @@ function Add(props)
                     className="custom-select col-md-6 col-sm-6" 
                     defaultValue="Chua lam" 
                     onChange={ e => onAddProcess(listProcess.indexOf(e))}>
-                    {listProcess.map((item, key) => (
+                    {Object.keys(listProcess).map((key) => (
                         <option key={key}>
-                            {item}
+                            {listProcess[key]}
                         </option>
                     ))}
                 </select>
