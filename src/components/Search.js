@@ -11,7 +11,7 @@ function Search(props)
 
     return (
         <div className='row my-3 mx-0'>
-            <div className='col-md-6 p-0'>
+            <div className='col-md-6' style={{padding: '0 5px 0 0'}}>
                 <input 
                     className='form-control'
                     onChange={e => setInputSearch(e.target.value)}

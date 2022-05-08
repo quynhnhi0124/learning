@@ -8,7 +8,7 @@ function Update(props)
 
     const handleUpdateJob = () => {
         updateItem.title = updateJobName;
-        updateItem.completed = updateProcess;
+        updateItem.completed = Boolean(Number(updateProcess));
         onUpdateJob(updateItem);
     }
     const handleCancelUpdate = () => {
@@ -25,7 +25,6 @@ function Update(props)
                     onChange={e => setUpdateJobName(e.target.value)}
                 />
                 <div className='d-block'>
-                    {console.log('update render')}
                     {Object.keys(listProcess).map((key) => {
                         return (<div key={key}>
                                     <input

@@ -1,48 +1,35 @@
 import * as React from "react";
 import ReactDOM from "react-dom"
-import Update from "./Update"
-import Add from "./Add";
-import Search from "./Search";
+import Add from "./components/Add";
+import Search from "./components/Search";
 import getToDoList from "./models/todoList";
+import ListJob from "./components/ListJob";
+import combineReducers from "./reducers/index";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import { createStore } from "redux";
+import { getJob } from "./actions/createJob";
+
+const store = createStore(combineReducers);
 
 const LIST_STATUS = {1 : "Hoàn thành", 0: "Chưa hoàn thành"};
 
 
 function App()
 {
+    const dispatch = useDispatch();
     const [errors, setErrors] = React.useState({});
-    const [jobs, setJobs] = React.useState([]);
-    const [addJob, setAddJob] = React.useState('');
     const [filterData, setFilterData] = React.useState([]);
-    const [counter, setCounter] = React.useState(0);
-    const [addProcess, setAddProcess] = React.useState();
-    const [isShowUpdate, setIsShowUpdate] = React.useState();
 
-    React.useEffect(() => setCounter(filterData.length), [filterData])
+    const jobs = useSelector(state => state.jobList);
     React.useEffect(() => {
         getToDoList().then(datas => {
-            setJobs(datas);
+            dispatch(getJob(datas));
             setFilterData(datas);
             return datas;
         })
     }, [])
-    
-    const onAddJob = e => {
-        setAddJob(e.target.value)
-    }
-    
-    const HandleAddJob = () => {
-        validation();
-        if (validation() === true) {
-            const newListJob = [...jobs,
-                {id: jobs[jobs.length - 1].id + 1, title: addJob, completed: addProcess}];
-            setJobs(newListJob);
-            setFilterData(newListJob);
-            setAddJob('');
-        }
-    }
 
-    const validation = () => {
+    const validation = (addJob) => {
         if (addJob === null || addJob.match(/^ *$/) !== null) {
             if(!errors.hasOwnProperty('job')) {
                 errors.job = 'Trường nhập bắt buộc';
@@ -57,30 +44,12 @@ function App()
         }
     }
 
-    const onAddProcess = e => {
-        setAddProcess(e.target.value)
-    }
-    
-    const handleShowUpdate = (jobId) => {
-        setIsShowUpdate(jobId);
-    }
-
-    const onUpdateJob = (updateItem) => {
-        const newJobList = jobs;
-        newJobList.map(job => job.id === updateItem.id ? updateItem : job);
-        setJobs(newJobList);
-        setIsShowUpdate();
-    }
-
-    const cancelUpdate = () => {
-        setIsShowUpdate();
-    }
-
     const handleDeleteJob = (jobId) => {
         const newJobList = jobs.filter(job => {
             return job.id !== jobId;
         });
-        setJobs(newJobList);
+
+        dispatch(getJob(newJobList));
         setFilterData(newJobList);
     }
 
@@ -91,53 +60,27 @@ function App()
             const result = jobs.filter((job) => job.title.toLowerCase().includes(input));
             setFilterData(result);
         }
-        return filterData;
     }
 
     return (
         <div className='container'>
             <Add 
-                addJob={addJob}
                 listProcess={LIST_STATUS} 
-                handleAddJob={HandleAddJob} 
-                onAddJob={onAddJob}
-                onAddProcess={onAddProcess}
                 listErrors={errors}
+                validation={validation}
             />
             <Search
                 searchJob={handleSearchJob}
 
             />
-            <h3>Danh sách công việc</h3>
-            <h5>Hiện trong danh sách có: {counter} công việc</h5>
-            <ul>
-            {filterData.map(job => (
-                <div key={job.id}>
-                    <div 
-                        className="mt-3"    
-                    >
-                        <li className="d-block">
-                            <p>{job.title}</p>
-                            <p>Trạng thái: {job.completed ? 'Hoàn thành' : 'Chưa hoàn thành'}</p>
-                        </li>
-                        {
-                            isShowUpdate === job.id &&
-                            <Update 
-                                updateItem={job} 
-                                onUpdateJob={onUpdateJob} 
-                                cancelUpdate={cancelUpdate}
-                                listProcess={LIST_STATUS} 
-                            /> 
-                        }
-                        <button className='btn btn-outline-success' onClick={() => handleShowUpdate(job.id)}>Update</button>
-                        <button className='btn btn-outline-danger' onClick={() => handleDeleteJob(job.id)}>Delete</button>
-                    </div><hr/>
-                </div>
-            ))}
-            </ul>
+            <ListJob
+                handleDeleteJob={handleDeleteJob}
+                listProcess={LIST_STATUS} 
+            />
         </div>
     );
 }
 
+export { store };
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<Provider store={store}><App /></Provider>, document.getElementById('root'));
